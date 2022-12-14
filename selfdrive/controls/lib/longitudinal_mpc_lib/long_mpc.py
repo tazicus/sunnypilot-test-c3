@@ -55,7 +55,14 @@ FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 MIN_ACCEL = -3.5
 MAX_ACCEL = 2.0
-T_FOLLOW = 1.45
+T_FOLLOW1 = 0.5
+T_FOLLOW1B = 0.5
+T_FOLLOW2 = 0.6
+T_FOLLOW2B = 0.6
+T_FOLLOW = 1.0
+T_FOLLOWB = 1.0
+T_FOLLOW4 = 1.2
+T_FOLLOW4B = 1.2
 COMFORT_BRAKE = 2.5
 STOP_DISTANCE = 5.5
 
@@ -269,11 +276,11 @@ class LongitudinalMpc:
   def get_cost_multipliers(self, v_lead0, v_lead1):
     v_ego = self.x0[1]
     v_ego_bps = [0, 10]
-    TFs = [1.0, 1.25, T_FOLLOW, 1.8]
+    TFs = [T_FOLLOW1B, T_FOLLOW2B, T_FOLLOW, T_FOLLOW4B]
     # KRKeegan adjustments to costs for different TFs
     # these were calculated using the test_longitudial.py deceleration tests
-    a_change_tf = interp(self.desired_TF, TFs, [.1, .8, 1., 1.1])
-    j_ego_tf = interp(self.desired_TF, TFs, [.6, .8, 1., 1.1])
+    a_change_tf = interp(self.desired_TF, TFs, [.4, .5, .6, .7])
+    j_ego_tf = interp(self.desired_TF, TFs, [.5, .6, .7, .8])
     d_zone_tf = interp(self.desired_TF, TFs, [1.6, 1.3, 1., 1.])
     # KRKeegan adjustments to improve sluggish acceleration
     # do not apply to deceleration
@@ -351,29 +358,29 @@ class LongitudinalMpc:
     if gap_adjust_cruise and self.mode == 'acc':
       if CP.carName == "hyundai":
         if carstate.gapAdjustCruiseTr == 4:
-          self.desired_TF = 1.8
+          self.desired_TF = T_FOLLOW4
         elif carstate.gapAdjustCruiseTr == 3:
           self.desired_TF = T_FOLLOW
         elif carstate.gapAdjustCruiseTr == 2:
-          self.desired_TF = 1.2
+          self.desired_TF = T_FOLLOW2
         elif carstate.gapAdjustCruiseTr == 1:
-          self.desired_TF = 1.0
+          self.desired_TF = T_FOLLOW1
       elif CP.carName == "toyota":
         if carstate.gapAdjustCruiseTr == 1:
-          self.desired_TF = 1.8
+          self.desired_TF = T_FOLLOW4
         elif carstate.gapAdjustCruiseTr == 2:
           self.desired_TF = T_FOLLOW
         elif carstate.gapAdjustCruiseTr == 3:
-          self.desired_TF = 1.2
+          self.desired_TF = T_FOLLOW2
       elif CP.carName == "honda":
         if carstate.gapAdjustCruiseTr == 0:
-          self.desired_TF = 1.8
+          self.desired_TF = T_FOLLOW4
         elif carstate.gapAdjustCruiseTr == 3:
           self.desired_TF = T_FOLLOW
         elif carstate.gapAdjustCruiseTr == 2:
-          self.desired_TF = 1.2
+          self.desired_TF = T_FOLLOW2
         elif carstate.gapAdjustCruiseTr == 1:
-          self.desired_TF = 1.0
+          self.desired_TF = T_FOLLOW1
       else:
         self.desired_TF = T_FOLLOW
     else:
